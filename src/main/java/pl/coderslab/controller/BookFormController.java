@@ -7,16 +7,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import pl.coderslab.entity.Author;
 import pl.coderslab.entity.Book;
+import pl.coderslab.entity.Category;
 import pl.coderslab.entity.Publisher;
 import pl.coderslab.service.AuthorService;
 import pl.coderslab.service.BookService;
+import pl.coderslab.service.CategoryService;
 import pl.coderslab.service.PublisherService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller
@@ -26,6 +31,7 @@ class BookFormController {
     private final BookService bookService;
     private final PublisherService publisherService;
     private final AuthorService authorService;
+    private final CategoryService categoryService;
 
     @GetMapping(path = "/book/form")
     String showAddBookForm(Model model) {
@@ -34,8 +40,10 @@ class BookFormController {
     }
 
     @PostMapping(path = "/book/form")
-    String processAddBookForm(Book book) {
-        // walidacja
+    String processAddBookForm(@Valid Book book, BindingResult result) {
+        if (result.hasErrors()){
+            return "book/add";
+        }
         bookService.save(book);
 
         return "redirect:/book/list";
@@ -54,10 +62,62 @@ class BookFormController {
     List<Publisher> publishers() {
         return publisherService.findAll();
     }
+    @GetMapping(path = "/book/edit")
+    String showEditBookForm(@RequestParam Long id, Model model) {
+        model.addAttribute("book", bookService.findById(id));
+        return "book/edit";
+    }
+
+    @PostMapping(path = "/book/edit")
+    String processEditBookForm(@Valid Book book, BindingResult result) {
+        if (result.hasErrors()){
+            return "book/edit";
+        }
+        bookService.update(book);
+
+        return "redirect:/book/list";
+    }
+    @GetMapping(path = "/author/form")
+    String showAddAuthorForm(Model model) {
+        model.addAttribute("author", new Author());
+        return "author/add";
+    }
+
+    @PostMapping(path = "/author/form")
+    String processAddAuthorForm(@Valid Author author, BindingResult result) {
+        if (result.hasErrors()){
+            return "author/add";
+        }
+        authorService.update(author);
+
+        return "redirect:/book/list";
+    }
+    @GetMapping(path = "/book/search")
+    String findByTitle(@RequestParam String title, Model model){
+        List<Book> books = bookService.findByTitle(title);
+        model.addAttribute("books", books);
+        return "book/list";
+    }
+    @GetMapping(path = "/book/search", params = "id")
+    String findByCategory(Category category, Model model){
+        List<Book> books = bookService.findByCategory(category);
+        model.addAttribute("books", books);
+        return "book/list";
+    }
+    @GetMapping(path = "/book/search", params = "categoryId")
+    String findByCategoryId(@RequestParam Long categoryId, Model model){
+        List<Book> books = bookService.findByCategory(categoryId);
+        model.addAttribute("books", books);
+        return "book/list";
+    }
 
     @ModelAttribute("authors")
     List<Author> authors() {
         return authorService.findAll();
+    }
+    @ModelAttribute("categories")
+    List<Category> categories() {
+        return categoryService.findAll();
     }
 
 }

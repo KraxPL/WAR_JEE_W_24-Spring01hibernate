@@ -2,6 +2,7 @@ package pl.coderslab.service;
 
 import pl.coderslab.entity.Author;
 import pl.coderslab.entity.Book;
+import pl.coderslab.entity.Category;
 import pl.coderslab.entity.Publisher;
 
 import java.util.List;
@@ -25,4 +26,8 @@ public interface BookService {
     void update(Book book);
 
     void deleteById(Long id);
+
+    List<Book> findByTitle(String title);
+    List<Book> findByCategory(Category category);
+    List<Book> findByCategory(Long id);
 }
